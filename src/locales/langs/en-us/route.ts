@@ -14,7 +14,6 @@ const route: App.I18n.Schema['translation']['route'] = {
   '(base)_function_use-request': 'useRequest Demo',
   '(base)_home': 'Home',
   '(base)_manage': 'System Manage',
-  '(base)_manage_applications': 'Application Management',
   '(base)_manage_role': 'Role Manage',
   '(base)_manage_role_[...slug]': 'Role Manage Details',
   '(base)_manage_user': 'User Manage',

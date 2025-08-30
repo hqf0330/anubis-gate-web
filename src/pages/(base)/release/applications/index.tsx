@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, Table, Button, Input, Space, Tag, Modal, message, Checkbox, Pagination, Select } from 'antd';
 import { SearchOutlined, PlusOutlined, SettingOutlined, UserOutlined, HomeOutlined, CloudOutlined, FileTextOutlined, EditOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { useNavigate } from 'react-router-dom';
 
 const { Search } = Input;
 
@@ -97,6 +98,7 @@ const ApplicationsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // 过滤后的应用数据
   const filteredApplications = useMemo(() => {
@@ -256,27 +258,18 @@ const ApplicationsPage: React.FC = () => {
   };
 
   const handleRecycle = (app: Application) => {
-    Modal.confirm({
-      title: '确认回收',
-      content: `确定要回收应用 "${app.name}" 吗？此操作不可逆。`,
-      okText: '确认回收',
-      cancelText: '取消',
-      okType: 'danger',
-      onOk: () => {
-        message.success(`应用 ${app.name} 已回收`);
-        // TODO: 实现回收逻辑
-      }
-    });
+    message.info(`回收应用: ${app.name}`);
+    // TODO: 实现回收逻辑
   };
 
   const handlePinToTop = (app: Application) => {
-    message.success(`应用 ${app.name} 已置顶`);
+    message.info(`置顶应用: ${app.name}`);
     // TODO: 实现置顶逻辑
   };
 
   const handleApplyNewApp = () => {
-    message.info('跳转到申请新应用页面');
-    // TODO: 实现跳转逻辑
+    // 跳转到新增应用页面
+    navigate('/release/applications/new');
   };
 
   const handleBatchOperation = () => {

@@ -353,17 +353,6 @@ export const generatedRoutes: ElegantConstRoute[] = [
                   icon: 'mdi:application',
                   order: 1
                 }
-              },
-              {
-                matchedFiles: [null, '/src/pages/(base)/release/applications/new.tsx', null, null],
-                name: '(base)_release_applications_new',
-                path: '/release/applications/new',
-                handle: {
-                  i18nKey: 'route.(base)_release_applications_new',
-                  title: '新增应用',
-                  icon: 'mdi:plus-circle',
-                  order: 2
-                }
               }
             ]
           },

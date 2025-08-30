@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Table, Button, Input, Space, Tag, Modal, message, Checkbox, Pagination, Select } from 'antd';
-import { SearchOutlined, PlusOutlined, SettingOutlined, UserOutlined, HomeOutlined, CloudOutlined, FileTextOutlined, EditOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Input, Space, Tag, Modal, message, Checkbox, Pagination, Select, Form, Divider, Row, Col } from 'antd';
+import { SearchOutlined, PlusOutlined, SettingOutlined, UserOutlined, HomeOutlined, CloudOutlined, FileTextOutlined, EditOutlined, UserSwitchOutlined, AppstoreOutlined, BranchesOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,18 @@ interface Application {
   status: 'active' | 'inactive';
   createTime: string;
   updateTime: string;
+}
+
+// 新增应用表单数据类型
+interface NewApplicationForm {
+  name: string;
+  description: string;
+  framework: string;
+  gitUrl: string;
+  branch: string;
+  buildCommand: string;
+  outputDir: string;
+  owner: string;
 }
 
 // 模拟数据
@@ -98,6 +110,9 @@ const ApplicationsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [newAppModalVisible, setNewAppModalVisible] = useState(false);
+  const [newAppForm] = Form.useForm();
+  const [newAppLoading, setNewAppLoading] = useState(false);
   const navigate = useNavigate();
 
   // 过滤后的应用数据
@@ -267,9 +282,48 @@ const ApplicationsPage: React.FC = () => {
     // TODO: 实现置顶逻辑
   };
 
+  // 新增应用相关函数
+  const handleNewAppSubmit = async (values: NewApplicationForm) => {
+    setNewAppLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const applicationInfo = {
+        appName: values.name,
+        description: values.description,
+        framework: values.framework,
+        gitUrl: values.gitUrl,
+        branch: values.branch,
+        buildCommand: values.buildCommand,
+        outputDir: values.outputDir,
+        owner: values.owner,
+        createTime: new Date().toISOString()
+      };
+
+      console.log('应用申请信息:', applicationInfo);
+
+      message.success('应用申请成功！');
+      message.info('您的应用已提交审核，审核通过后可在应用列表中找到');
+
+      // 关闭模态框并重置表单
+      setNewAppModalVisible(false);
+      newAppForm.resetFields();
+    } catch (error) {
+      message.error('申请失败，请重试');
+    } finally {
+      setNewAppLoading(false);
+    }
+  };
+
+  const handleNewAppCancel = () => {
+    setNewAppModalVisible(false);
+    newAppForm.resetFields();
+  };
+
   const handleApplyNewApp = () => {
-    // 跳转到新增应用页面
-    navigate('/release/applications/new');
+    // 打开新增应用模态框
+    setNewAppModalVisible(true);
+    newAppForm.resetFields();
   };
 
   const handleBatchOperation = () => {
@@ -406,6 +460,207 @@ const ApplicationsPage: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* 新增应用模态框 */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <PlusOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+            新增应用
+          </div>
+        }
+        open={newAppModalVisible}
+        onCancel={handleNewAppCancel}
+        footer={null}
+        width={800}
+        destroyOnClose
+      >
+        <Form
+          form={newAppForm}
+          layout="vertical"
+          onFinish={handleNewAppSubmit}
+          initialValues={{
+            framework: 'react-vite',
+            branch: 'main',
+            buildCommand: 'npm run build',
+            outputDir: 'dist'
+          }}
+        >
+          {/* 应用信息 */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: '#1890ff' }}>
+              <AppstoreOutlined style={{ marginRight: '8px' }} />
+              应用信息
+            </h3>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="name"
+                  label="应用名称"
+                  rules={[{ required: true, message: '请输入应用名称' }]}
+                >
+                  <Input
+                    placeholder="请输入应用名称,如: my-app"
+                    prefix={<AppstoreOutlined />}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="framework"
+                  label="技术框架"
+                  rules={[{ required: true, message: '请选择技术框架' }]}
+                >
+                  <Select placeholder="选择技术框架">
+                    <Select.Option value="react-vite">React + Vite</Select.Option>
+                    <Select.Option value="vue-vite">Vue + Vite</Select.Option>
+                    <Select.Option value="angular">Angular</Select.Option>
+                    <Select.Option value="nextjs">Next.js</Select.Option>
+                    <Select.Option value="nuxtjs">Nuxt.js</Select.Option>
+                    <Select.Option value="svelte">Svelte</Select.Option>
+                    <Select.Option value="other">其他</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item
+              name="description"
+              label="应用描述"
+              rules={[{ required: true, message: '请输入应用描述' }]}
+            >
+              <Input.TextArea
+                rows={3}
+                placeholder="请简要描述应用的功能和用途"
+                showCount
+                maxLength={200}
+              />
+            </Form.Item>
+          </div>
+
+          <Divider />
+
+          {/* 代码仓库配置 */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: '#52c41a' }}>
+              <BranchesOutlined style={{ marginRight: '8px' }} />
+              代码仓库配置
+            </h3>
+
+            <Row gutter={16}>
+              <Col span={16}>
+                <Form.Item
+                  name="gitUrl"
+                  label="Git 仓库地址"
+                  rules={[{ required: true, message: '请输入Git仓库地址' }]}
+                >
+                  <Input
+                    placeholder="https://github.com/username/repository.git"
+                    prefix={<BranchesOutlined />}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={8}>
+                <Form.Item
+                  name="branch"
+                  label="默认分支"
+                  rules={[{ required: true, message: '请输入默认分支' }]}
+                >
+                  <Input
+                    placeholder="main"
+                    prefix={<BranchesOutlined />}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
+
+          <Divider />
+
+          {/* 构建配置 */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: '#722ed1' }}>
+              <SettingOutlined style={{ marginRight: '8px' }} />
+              构建配置
+            </h3>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="buildCommand"
+                  label="构建命令"
+                  rules={[{ required: true, message: '请输入构建命令' }]}
+                >
+                  <Input
+                    placeholder="npm run build"
+                    addonBefore="构建命令"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="outputDir"
+                  label="输出目录"
+                  rules={[{ required: true, message: '请输入输出目录' }]}
+                >
+                  <Input
+                    placeholder="dist"
+                    addonBefore="输出目录"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
+
+          <Divider />
+
+          {/* 负责人信息 */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: '#13c2c2' }}>
+              <UserOutlined style={{ marginRight: '8px' }} />
+              负责人信息
+            </h3>
+
+            <Form.Item
+              name="owner"
+              label="负责人"
+              rules={[{ required: true, message: '请输入负责人' }]}
+            >
+              <Input
+                placeholder="请输入负责人姓名"
+                prefix={<UserOutlined />}
+              />
+            </Form.Item>
+          </div>
+
+          {/* 操作按钮 */}
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <Space size="large">
+              <Button
+                size="large"
+                onClick={handleNewAppCancel}
+                style={{ minWidth: '100px' }}
+              >
+                取消
+              </Button>
+              <Button
+                type="primary"
+                size="large"
+                htmlType="submit"
+                loading={newAppLoading}
+                icon={<PlusOutlined />}
+                style={{ minWidth: '100px' }}
+              >
+                {newAppLoading ? '申请中...' : '提交申请'}
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 };
